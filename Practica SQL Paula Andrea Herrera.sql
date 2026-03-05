@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 23-02-2026 a las 17:27:20
+-- Tiempo de generación: 05-03-2026 a las 15:05:47
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,6 +20,49 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `biblioteca`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `audi_socio`
+--
+
+CREATE TABLE `audi_socio` (
+  `id_audi` int(10) NOT NULL,
+  `soc_Numero_audi` int(11) DEFAULT NULL,
+  `soc_Nombre_anterior` varchar(45) DEFAULT NULL,
+  `soc_Apellido_anterior` varchar(45) DEFAULT NULL,
+  `soc_Direccion_anterior` varchar(255) DEFAULT NULL,
+  `soc_Telefono_anterior` varchar(10) DEFAULT NULL,
+  `soc_Nombre_nuevo` varchar(45) DEFAULT NULL,
+  `soc_Apellido_nuevo` varchar(45) DEFAULT NULL,
+  `soc_Direccion_nuevo` varchar(255) DEFAULT NULL,
+  `soc_Telefono_nuevo` varchar(10) DEFAULT NULL,
+  `audi_fechaModificacion` datetime DEFAULT NULL,
+  `audi_usuario` varchar(10) DEFAULT NULL,
+  `audi_accion` varchar(45) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `audi_socio`
+--
+
+INSERT INTO `audi_socio` (`id_audi`, `soc_Numero_audi`, `soc_Nombre_anterior`, `soc_Apellido_anterior`, `soc_Direccion_anterior`, `soc_Telefono_anterior`, `soc_Nombre_nuevo`, `soc_Apellido_nuevo`, `soc_Direccion_nuevo`, `soc_Telefono_nuevo`, `audi_fechaModificacion`, `audi_usuario`, `audi_accion`) VALUES
+(1, 17, 'Lois', 'Barrera', 'Calle 28 36 -26', '3151258697', 'Lois', 'Barrera', 'CALLE 72#2', '3123609028', '2026-03-05 07:36:59', 'root@local', 'Actualización'),
+(2, 16, 'Roberto Carlos', 'Castaño', 'Calle 11 36 -25', '3364658655', NULL, NULL, NULL, NULL, '2026-03-05 08:15:40', 'root@local', 'Registro eliminado');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `autor`
+--
+
+CREATE TABLE `autor` (
+  `AUT_CODIGO` int(11) NOT NULL,
+  `AUT_APELLIDO` varchar(45) NOT NULL,
+  `AUT_NACIMIENTO` date NOT NULL,
+  `AUT_MUERTE` date DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `autor`
@@ -40,6 +83,68 @@ INSERT INTO `autor` (`AUT_CODIGO`, `AUT_APELLIDO`, `AUT_NACIMIENTO`, `AUT_MUERTE
 (890, 'Brown', '1982-11-17', '0000-00-00'),
 (901, 'Soto', '1979-05-13', '2015-11-05');
 
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `cliente`
+--
+
+CREATE TABLE `cliente` (
+  `ID_CLIENTE` int(11) NOT NULL,
+  `NOMBRE_CLIENTE` varchar(20) NOT NULL,
+  `CORREO` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `cliente`
+--
+
+INSERT INTO `cliente` (`ID_CLIENTE`, `NOMBRE_CLIENTE`, `CORREO`) VALUES
+(1, 'ANA LUNA', 'ANALUNA36@HOTMAIL.COM'),
+(2, 'SOL SOLECITO', 'SOLE@GMAIL.COM');
+
+--
+-- Disparadores `cliente`
+--
+DELIMITER $$
+CREATE TRIGGER `seguimiento_actualizacion_cliente` BEFORE UPDATE ON `cliente` FOR EACH ROW INSERT INTO LOG_CLIENTE(
+    ID_CLIENTE,
+    NOMBRE_ANTERIOR,
+    CORREO_ANTERIOR,
+    NOMBRE_NUEVO,
+    CORREO_NUEVO,
+    FECHA_MODIFICACION,
+    USUARIO_MODIFICACION,
+    COMENTARIO)
+     VALUES (new.ID_CLIENTE, old.NOMBRE_CLIENTE, OLD.CORREO,NEW.NOMBRE_CLIENTE, NEW.CORREO,NOW (),USER(),'SE ACTUALIZAN DATOS')
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `seguimiento_eliminacion_cliente` BEFORE DELETE ON `cliente` FOR EACH ROW INSERT INTO LOG_CLIENTE(
+    ID_CLIENTE,
+    NOMBRE_ANTERIOR,
+    CORREO_ANTERIOR,
+    FECHA_MODIFICACION,
+    USUARIO_MODIFICACION,
+    COMENTARIO)
+VALUES (OLD.ID_CLIENTE,OLD.NOMBRE_CLIENTE,OLD.CORREO,NOW(),USER(),'Se eliminaron datos')
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `libro`
+--
+
+CREATE TABLE `libro` (
+  `LIB_ISBN` bigint(20) NOT NULL,
+  `LIB_TITULO` varchar(255) NOT NULL,
+  `LIB_GENERO` varchar(20) NOT NULL,
+  `LIB_NUMEROPAGINAS` int(11) NOT NULL,
+  `LIB_DIASPRESTAMO` tinyint(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Volcado de datos para la tabla `libro`
 --
@@ -58,6 +163,20 @@ INSERT INTO `libro` (`LIB_ISBN`, `LIB_TITULO`, `LIB_GENERO`, `LIB_NUMEROPAGINAS`
 (9876543210, 'El Laberinto de los Recuerdos', 'cuento', 412, 7),
 (9999999999, 'El Enigma de los Espejos Rotos', 'romance', 156, 7);
 
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `prestamo`
+--
+
+CREATE TABLE `prestamo` (
+  `PRES_ID` varchar(20) NOT NULL,
+  `PRES_FECHAPRESTAMO` date NOT NULL,
+  `PRES_FECHADEVOLUCION` date NOT NULL,
+  `SOC_COPIANUMERO` int(11) NOT NULL,
+  `LIB_COPIAISBN` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Volcado de datos para la tabla `prestamo`
 --
@@ -71,6 +190,20 @@ INSERT INTO `prestamo` (`PRES_ID`, `PRES_FECHAPRESTAMO`, `PRES_FECHADEVOLUCION`,
 ('pres6', '2023-08-19', '2023-08-26', 12, 5555555555),
 ('pres7', '2023-10-24', '2023-10-27', 3, 1357924680),
 ('pres8', '2023-11-11', '2023-11-12', 4, 9999999999);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `socio`
+--
+
+CREATE TABLE `socio` (
+  `SOC_NUMERO` int(11) NOT NULL,
+  `SOC_NOMBRE` varchar(45) NOT NULL,
+  `SOC_APELLIDO` varchar(45) NOT NULL,
+  `SOC_DIRECCION` varchar(255) NOT NULL,
+  `SOC_TELEFONO` varchar(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `socio`
@@ -89,8 +222,73 @@ INSERT INTO `socio` (`SOC_NUMERO`, `SOC_NOMBRE`, `SOC_APELLIDO`, `SOC_DIRECCION`
 (10, 'Andrea', 'García', 'Calle del Sol 432, La Colina, Zaragoza', '1112345678'),
 (11, 'Alejandro', 'Torres', 'Carrera del Oeste 765, Ciudad Nueva, Murcia', '4951234567'),
 (12, 'Sofia', 'Morales', 'Avenida del Mar 098, Costa Brava, Gijón', '5512345678'),
-(16, 'Roberto Carlos', 'Castaño', 'Calle 11 36 -25', '3364658655'),
-(17, 'Lois', 'Barrera', 'Calle 28 36 -26', '3151258697');
+(17, 'Lois', 'Barrera', 'CALLE 72#2', '3123609028');
+
+--
+-- Disparadores `socio`
+--
+DELIMITER $$
+CREATE TRIGGER `socios_after_delete` AFTER DELETE ON `socio` FOR EACH ROW INSERT INTO audi_socio(
+    soc_Numero_audi,
+    soc_Nombre_anterior,
+    soc_Apellido_anterior,
+    soc_Direccion_anterior,
+    soc_Telefono_anterior,
+    audi_fechaModificacion,
+    audi_usuario,
+    audi_accion)
+VALUES(
+    old.soc_numero,
+    old.soc_nombre,
+    old.soc_apellido,
+    old.soc_direccion,
+    old.soc_telefono,
+    NOW(),
+    CURRENT_USER(),
+    'Registro eliminado')
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `socios_before_update` BEFORE UPDATE ON `socio` FOR EACH ROW INSERT INTO audi_socio(
+    soc_Numero_audi,
+    soc_Nombre_anterior,
+    soc_Apellido_anterior,
+    soc_Direccion_anterior,
+    soc_Telefono_anterior,
+    soc_Nombre_nuevo,
+    soc_Apellido_nuevo,
+    soc_Direccion_nuevo,
+    soc_Telefono_nuevo,
+    audi_fechaModificacion,
+    audi_usuario,
+    audi_accion)
+VALUES(
+    new.soc_numero,
+    old.soc_nombre,
+    old.soc_apellido,
+    old.soc_direccion,
+    old.soc_telefono,
+    new.soc_nombre,
+    new.soc_apellido,
+    new.soc_direccion,
+    new.soc_telefono,
+    NOW(),
+    CURRENT_USER(),
+    'Actualización')
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_autores`
+--
+
+CREATE TABLE `tipo_autores` (
+  `COPIA_ISBN` bigint(20) DEFAULT NULL,
+  `COPIA_AUTOR` int(11) DEFAULT NULL,
+  `TIPO_AUTOR` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `tipo_autores`
@@ -127,6 +325,89 @@ INSERT INTO `tipo_autores` (`COPIA_ISBN`, `COPIA_AUTOR`, `TIPO_AUTOR`) VALUES
 (9517530862, 432, 'Autor'),
 (7777777777, 765, 'Autor'),
 (9999999999, 98, 'Autor');
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `audi_socio`
+--
+ALTER TABLE `audi_socio`
+  ADD PRIMARY KEY (`id_audi`);
+
+--
+-- Indices de la tabla `autor`
+--
+ALTER TABLE `autor`
+  ADD PRIMARY KEY (`AUT_CODIGO`);
+
+--
+-- Indices de la tabla `cliente`
+--
+ALTER TABLE `cliente`
+  ADD PRIMARY KEY (`ID_CLIENTE`);
+
+--
+-- Indices de la tabla `libro`
+--
+ALTER TABLE `libro`
+  ADD PRIMARY KEY (`LIB_ISBN`);
+
+--
+-- Indices de la tabla `prestamo`
+--
+ALTER TABLE `prestamo`
+  ADD PRIMARY KEY (`PRES_ID`),
+  ADD KEY `SOC_COPIANUMERO` (`SOC_COPIANUMERO`),
+  ADD KEY `LIB_COPIAISBN` (`LIB_COPIAISBN`);
+
+--
+-- Indices de la tabla `socio`
+--
+ALTER TABLE `socio`
+  ADD PRIMARY KEY (`SOC_NUMERO`);
+
+--
+-- Indices de la tabla `tipo_autores`
+--
+ALTER TABLE `tipo_autores`
+  ADD KEY `COPIA_ISBN` (`COPIA_ISBN`),
+  ADD KEY `COPIA_AUTOR` (`COPIA_AUTOR`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `audi_socio`
+--
+ALTER TABLE `audi_socio`
+  MODIFY `id_audi` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `cliente`
+--
+ALTER TABLE `cliente`
+  MODIFY `ID_CLIENTE` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `prestamo`
+--
+ALTER TABLE `prestamo`
+  ADD CONSTRAINT `prestamo_ibfk_1` FOREIGN KEY (`SOC_COPIANUMERO`) REFERENCES `socio` (`SOC_NUMERO`),
+  ADD CONSTRAINT `prestamo_ibfk_2` FOREIGN KEY (`LIB_COPIAISBN`) REFERENCES `libro` (`LIB_ISBN`);
+
+--
+-- Filtros para la tabla `tipo_autores`
+--
+ALTER TABLE `tipo_autores`
+  ADD CONSTRAINT `tipo_autores_ibfk_1` FOREIGN KEY (`COPIA_ISBN`) REFERENCES `libro` (`LIB_ISBN`),
+  ADD CONSTRAINT `tipo_autores_ibfk_2` FOREIGN KEY (`COPIA_AUTOR`) REFERENCES `autor` (`AUT_CODIGO`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
